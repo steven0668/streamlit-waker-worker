@@ -10,7 +10,7 @@ const urls = [
 
 (async () => {
   const browser = await puppeteer.launch({
-    headless: false,        // 调试时看得到浏览器
+    headless: true,        // 调试时看得到浏览器
     defaultViewport: null,
     args: ['--start-maximized'],
   });
