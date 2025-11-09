@@ -1,0 +1,35 @@
+# .github/workflows/wakeup.yml
+name: Streamlit App Wakeup
+
+on:
+  schedule:
+    # 每天 UTC 凌晨 2:00 执行（北京时间 10:00）
+    - cron: '0 2 * * *'
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  wakeup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          npm init -y
+          npm install puppeteer
+
+      - name: Run wakeup script
+        run: node scripts/wakeup.js
+
+      - name: Upload screenshots (optional)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: '*.jpg'
