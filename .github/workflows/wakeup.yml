@@ -4,7 +4,7 @@ name: Streamlit App Wakeup
 on:
   schedule:
     # 每天 UTC 凌晨 2:00 执行（北京时间 10:00）
-    - cron: '0 2 * * *'
+    - cron: '0 0 * * *'
   workflow_dispatch: # 允许手动触发
 
 jobs:

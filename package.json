@@ -6,6 +6,6 @@
     "dev": "node --inspect scripts/wakeup.js"
   },
   "dependencies": {
-    "puppeteer": "^23.0.0"
+    "puppeteer": "^24.29.1"
   }
 }
