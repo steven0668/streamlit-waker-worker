@@ -27,9 +27,9 @@ jobs:
       - name: Run wakeup script
         run: node scripts/wakeup.js
 
-      - name: Upload screenshots (optional)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: screenshots
-          path: '*.jpg'
+#      - name: Upload screenshots (optional)
+#        if: always()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: screenshots
+#          path: '*.jpg'
