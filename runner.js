@@ -21,7 +21,6 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
     ],
-    // 本地开发：不指定 executablePath,自动用下载的 Chromium
   });
 
   const run = async () => {
@@ -30,9 +29,21 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
 
     try {
-      await page.goto(TARGET_URL, { waitUntil: 'networkidle2', timeout: 30000 });
+      await page.goto(TARGET_URL, { waitUntil: 'networkidle2', timeout: 180000 });
       console.log('页面已加载');
 
+      // 关键：检查是否已包含 "Hosted with Streamlit"
+      const hasViewer = await page.evaluate(() => {
+        return document.body.innerText.includes('Hosted with Streamlit');
+      });
+
+      if (hasViewer) {
+        console.log('检测到 "Hosted with Streamlit"，应用已唤醒，跳过点击');
+        return;
+      }
+
+      // 未唤醒 → 查找并点击按钮
+      console.log('未检测到 "Hosted with Streamlit"，尝试点击唤醒按钮...');
       const btn = await page.waitForSelector(
         `button:has-text("Yes, get this app back up!")`,
         { timeout: 10000 }
@@ -45,8 +56,9 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         await delay(10000);
         console.log('唤醒完成');
       } else {
-        console.log('未检测到按钮（可能已激活）');
+        console.log('未检测到按钮（可能已激活或异常）');
       }
+
     } catch (err) {
       console.error('错误:', err.message);
     } finally {
@@ -57,8 +69,8 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
   // 立即运行一次
   await run();
 
-  // 然后周期运行
+  // 周期运行
   setInterval(run, INTERVAL_MINUTES * 60 * 1000);
 
-  console.log(`服务运行中,每 ${INTERVAL_MINUTES} 分钟执行一次`);
+  console.log(`服务运行中，每 ${INTERVAL_MINUTES} 分钟执行一次`);
 })();

@@ -1,11 +1,13 @@
 {
-  "name": "streamlit-wakeup",
+  "name": "streamlit-waker-worker",
   "version": "1.0.0",
+  "type": "module",
+  "main": "runner.js",
   "scripts": {
-    "start": "node scripts/wakeup.js",
-    "dev": "node --inspect scripts/wakeup.js"
+    "start": "node runner.js",
+    "dev": "node --inspect runner.js"
   },
   "dependencies": {
-    "puppeteer": "^24.29.1"
+    "puppeteer": "^23.0.0"
   }
 }
