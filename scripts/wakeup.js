@@ -3,14 +3,14 @@ const puppeteer = require('puppeteer');
 
 const urls = [
   'https://blank-app-0668-01.streamlit.app/',
-  'https://nathan0668-web.hf.space/',
-  'https://silasvivid-web.hf.space/'
+  // 'https://nathan0668-web.hf.space/',
+  // 'https://silasvivid-web.hf.space/'
   // 添加更多链接
 ];
 
 (async () => {
   const browser = await puppeteer.launch({
-    headless: true,        // 调试时看得到浏览器
+    headless: false,        // 调试时看得到浏览器
     defaultViewport: null,
     args: ['--start-maximized'],
   });
