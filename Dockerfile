@@ -24,6 +24,7 @@ RUN npm ci --only=production && \
 
 # 复制代码（确保 runner.js 在根目录）
 COPY runner.js ./
+COPY runner-once.js ./
 
 # 入口
 CMD ["node", "runner.js"]
