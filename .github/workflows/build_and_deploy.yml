@@ -137,4 +137,5 @@ jobs:
             -e TARGET_URLS="${TARGET_URLS}" \
             -e HEADLESS="${HEADLESS}" \
             -e CLICK_DELAY="${CLICK_DELAY}" \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:once-latest \
+            node runner-once.js
