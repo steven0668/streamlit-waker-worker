@@ -1,0 +1,64 @@
+name: Build & Deploy Runner.js (Main Service)
+
+# =============================================
+# 触发条件：推送代码到 release 分支
+# =============================================
+on:
+  push:
+    branches:
+      - release
+    paths:
+      - Dockerfile
+      - package*.json
+      - runner.js
+      - runner-once.js  # 即使 once 独立，也构建通用镜像
+
+  workflow_dispatch:  # 手动强制构建
+    inputs:
+      run_build:
+        description: 'Force build images'
+        required: false
+        default: 'true'
+        type: boolean
+
+# =============================================
+# 全局变量
+# =============================================
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_TAG: ${{ github.sha }}
+
+# =============================================
+# 构建并推送镜像（默认 runner.js）
+# =============================================
+jobs:
+  build-and-push:
+    if: |
+      github.ref == 'refs/heads/release' ||
+      (github.event_name == 'workflow_dispatch' && inputs.run_build == 'true')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push main image (runner.js)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest  # 用于 runner.js 部署
+          cache-from: type=gha

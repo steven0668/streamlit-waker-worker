@@ -1,0 +1,78 @@
+name: Run Runner-Once.js (Scheduled Wakeup)
+
+# =============================================
+# 触发条件：周期 + 手动
+# =============================================
+on:
+  schedule:
+    # 每天凌晨 2:00 UTC（可调整，例如 '0 0 * * *' 为每天 00:00）
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # 手动触发
+    inputs:
+      headless:
+        description: 'Puppeteer headless mode'
+        required: false
+        default: 'true'
+        type: boolean
+      click_delay:
+        description: 'Delay after click (ms)'
+        required: false
+        default: '20000'
+        type: choice
+        options: ['10000', '20000', '30000']
+
+# =============================================
+# 全局变量
+# =============================================
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+# =============================================
+# 周期执行 runner-once.js
+# =============================================
+jobs:
+  run-once:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull latest image
+        run: |
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest || \
+          echo "No latest image found, skipping pull."
+
+      - name: Debug TARGET_URLS
+        env:
+          TARGET_URLS: ${{ vars.TARGET_URLS }}
+        run: |
+          if [ -n "$TARGET_URLS" ]; then
+            echo "TARGET_URLS length: ${#TARGET_URLS} chars"
+          else
+            echo "ERROR: TARGET_URLS is empty!"
+            exit 1
+          fi
+
+      - name: Run runner-once.js
+        env:
+          TARGET_URLS: ${{ vars.TARGET_URLS }}
+          HEADLESS: ${{ inputs.headless || 'true' }}  # 手动时用 input，周期时默认 true
+          CLICK_DELAY: ${{ inputs.click_delay || '20000' }}
+        run: |
+          docker run --rm \
+            -e TARGET_URLS="${TARGET_URLS}" \
+            -e HEADLESS="${HEADLESS}" \
+            -e CLICK_DELAY="${CLICK_DELAY}" \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+            node runner-once.js  # Override CMD 为 once

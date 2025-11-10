@@ -18,13 +18,13 @@ WORKDIR /app
 # 复制包管理文件
 COPY package*.json ./
 
-# 关键：先安装依赖，再检查
+# 安装依赖
 RUN npm ci --only=production && \
     echo "npm ci 成功" || (echo "npm ci 失败，打印日志:" && cat /root/.npm/_logs/*.log && exit 1)
 
-# 复制代码（确保 runner.js 在根目录）
+# 复制两个 JS 文件
 COPY runner.js ./
 COPY runner-once.js ./
 
-# 入口
+# 默认入口（runner.js）
 CMD ["node", "runner.js"]
