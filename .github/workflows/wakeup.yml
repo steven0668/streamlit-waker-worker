@@ -1,11 +1,8 @@
-# .github/workflows/wakeup.yml
-
 name: Streamlit App Wakeup
 
-# 触发：每天 UTC 00:00（北京时间 08:00） + 手动触发
 on:
   schedule:
-    - cron: '0 0 * * *'  # UTC 00:00 = 北京 08:00
+    - cron: '0 0 * * *'  # UTC 00:00 → 北京 08:00
   workflow_dispatch:
     inputs:
       target_urls:
@@ -19,28 +16,29 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      # 1. 拉取代码
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. 设置 Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      # 3. 安装依赖（推荐有 package.json）
       - name: Install dependencies
         run: |
+          # 推荐：使用 package.json（更快、更稳定）
           if [ -f package.json ]; then
+            echo "检测到 package.json，使用 npm ci"
             npm ci
           else
+            echo "无 package.json，安装最新 puppeteer"
             npm init -y
             npm install puppeteer@latest
           fi
 
-          # 安装 Puppeteer 所需系统库
+          # 安装 Chromium 依赖（puppeteer 24+ 需要）
+          echo "安装系统依赖..."
           sudo apt-get update -q
           sudo apt-get install -y \
             ca-certificates fonts-liberation libasound2 libatk-bridge2.0-0 \
@@ -49,13 +47,11 @@ jobs:
             libnss3 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 \
             libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 \
             libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 \
-            libxtst6 lsb-release wget xdg-utils > /dev/null 2>&1
+            libxtst6 wget > /dev/null 2>&1
 
-      # 4. 运行唤醒脚本（支持手动输入覆盖）
       - name: Run wakeup script
         env:
-          # 优先使用手动输入 → 否则用变量 → 最后用默认
-          TARGET_URLS: ${{ inputs.target_urls || vars.TARGET_URLS }}
+          TARGET_URLS: ${{ inputs.target_urls || vars.TARGET_URLS || 'https://blank-app-0668-01.streamlit.app/' }}
           CLICK_DELAY: ${{ vars.CLICK_DELAY || '20000' }}
           HEADLESS: ${{ vars.HEADLESS || 'true' }}
         run: |
@@ -64,10 +60,8 @@ jobs:
           echo "----------------------------------------"
           node scripts/wakeup.js
 
-      # 5. 失败时高亮提示
       - name: Failure Alert
         if: failure()
         run: |
-          echo "唤醒任务失败！请查看上方日志。"
-          echo "时间: $(date)"
+          echo "唤醒失败！请检查日志。"
           exit 1
