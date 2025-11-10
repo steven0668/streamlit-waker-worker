@@ -1,8 +1,5 @@
 name: Build & Deploy Runner.js (Main Service)
 
-# =============================================
-# 触发条件：推送代码到 release 分支
-# =============================================
 on:
   push:
     branches:
@@ -11,9 +8,8 @@ on:
       - Dockerfile
       - package*.json
       - runner.js
-      - runner-once.js  # 即使 once 独立，也构建通用镜像
-
-  workflow_dispatch:  # 手动强制构建
+      - runner-once.js
+  workflow_dispatch:
     inputs:
       run_build:
         description: 'Force build images'
@@ -21,17 +17,11 @@ on:
         default: 'true'
         type: boolean
 
-# =============================================
-# 全局变量
-# =============================================
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   IMAGE_TAG: ${{ github.sha }}
 
-# =============================================
-# 构建并推送镜像（默认 runner.js）
-# =============================================
 jobs:
   build-and-push:
     if: |
@@ -60,5 +50,5 @@ jobs:
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest  # 用于 runner.js 部署
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           cache-from: type=gha
