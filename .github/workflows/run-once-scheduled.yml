@@ -6,7 +6,7 @@ name: Run Runner-Once.js (Scheduled Wakeup)
 on:
   schedule:
     # 每天凌晨 2:00 UTC（可调整，例如 '0 0 * * *' 为每天 00:00）
-    - cron: '0 2 * * *'
+    - cron: '0 0 * * *'
   workflow_dispatch:  # 手动触发
     inputs:
       headless:
